@@ -9,8 +9,7 @@ import java.io.IOException;
 import javax.swing.*;
 import java.util.Formatter;
 import java.util.Scanner;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 public class TicTacToeClient extends JFrame implements Runnable {
     private JTextField idField; // textfield to display player's mark
@@ -30,6 +29,11 @@ public class TicTacToeClient extends JFrame implements Runnable {
 
     private String finalPlayerName; // Declare finalPlayerName as a class variable
 
+    private int playerTimer = 60;
+    private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> timerHandle;
+    private JLabel timerLabel;
+
 
     // set up user-interface and board
     public TicTacToeClient(String host) {
@@ -42,6 +46,10 @@ public class TicTacToeClient extends JFrame implements Runnable {
         boardPanel.setLayout(new GridLayout(3, 3, 0,0 ));
 
         board = new Square[3][3]; // create board
+
+        // Create and initialize the timer label
+        timerLabel = new JLabel("Time left: " + playerTimer);
+        add(timerLabel, BorderLayout.NORTH);
 
         // Prompt the user for their name using JOptionPane
         String playerName = JOptionPane.showInputDialog("Enter your name:");
@@ -69,12 +77,16 @@ public class TicTacToeClient extends JFrame implements Runnable {
 
         panel2 = new JPanel(); // set up panel to contain boardPanel
         panel2.add(boardPanel, BorderLayout.CENTER); // add board panel
+        panel2.add(timerLabel, BorderLayout.NORTH); // add timerLabel to the top of the panel
         add(panel2, BorderLayout.CENTER); // add container panel
+
 
         setSize(400, 350); // set size of window
         setLocationRelativeTo(null);// center the window on the screen
         setVisible(true); // show window
 
+        // Initialize the scheduler
+        scheduler = Executors.newScheduledThreadPool(1);
 
         startClient();
     } // end TicTacToeClient constructor
@@ -86,6 +98,8 @@ public class TicTacToeClient extends JFrame implements Runnable {
             // make connection to server
             connection = new Socket(
                     InetAddress.getByName(ticTacToeHost), 12345);
+            // Start the timer for the current player
+            startTimer();
 
             // get streams for input and output
             input = new Scanner(connection.getInputStream());
@@ -99,6 +113,54 @@ public class TicTacToeClient extends JFrame implements Runnable {
         ExecutorService worker = Executors.newFixedThreadPool(1);
         worker.execute(this); // execute client
     } // end method startClient
+
+    // start the timer for the current player
+    // start the timer for the current player
+    // start the timer for the current player
+    private void startTimer() {
+        timerHandle = scheduler.scheduleAtFixedRate(() -> {
+            SwingUtilities.invokeLater(() -> {
+                if (myTurn) {
+                    playerTimer--;
+                    timerLabel.setText("Time left: " + playerTimer);
+
+                    if (playerTimer <= 0) {
+                        // Player has run out of time, handle accordingly
+                        handlePlayerTimeout();
+                    }
+                }
+            });
+        }, 0, 1, TimeUnit.SECONDS);
+    }
+
+
+
+
+    // Method to handle player timeout
+    private void handlePlayerTimeout() {
+        // Stop the timer
+        timerHandle.cancel(true);
+
+        // Display a message or take appropriate action
+        JOptionPane.showMessageDialog(this, "You have run out of time. You lose!");
+
+        // Close the connection or perform any necessary actions
+        closeConnection();
+
+        // Optionally, you may want to exit the application or perform other cleanup
+        System.exit(0);
+    }
+
+    // Close the connection and cleanup resources
+    private void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     // control thread that allows continuous update of displayArea
     public void run() {
@@ -147,6 +209,8 @@ public class TicTacToeClient extends JFrame implements Runnable {
         else
             displayMessage(message + "\n"); // display the message
     } // end method processMessage
+
+
 
     // manipulate outputArea in event-dispatch thread
     private void displayMessage(final String messageToDisplay) {
@@ -232,6 +296,11 @@ public class TicTacToeClient extends JFrame implements Runnable {
             super.paintComponent(g);
 
             g.drawRect(0, 0, 67, 67); // draw larger square
+            if (mark.equals(X_MARK)) {
+                g.setColor(Color.RED); // Set color to red for "X"
+            } else if(mark.equals(O_MARK)) {
+                g.setColor(Color.BLUE); // Set color to black for "O"
+            }
             g.setFont(new Font("Arial", Font.PLAIN, 40)); // set font size to 40
             g.drawString(mark, 20, 50); // draw mark with updated font size
         } // end method paintComponent

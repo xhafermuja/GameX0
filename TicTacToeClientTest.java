@@ -13,5 +13,6 @@ public class TicTacToeClientTest {
             application = new TicTacToeClient(args[0]); // use args
 
         application.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        application.setResizable(false);
     } // end main
 } // end class TicTacToeClientTest

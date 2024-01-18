@@ -296,10 +296,10 @@ public class TicTacToeServer extends JFrame {
         }
     } // end class Player
 
-    // Main method to run the server
-    public static void main(String[] args) {
-        TicTacToeServer server = new TicTacToeServer();
-        server.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        server.execute(); // run the server application
-    }
+//    // Main method to run the server
+//    public static void main(String[] args) {
+//        TicTacToeServer server = new TicTacToeServer();
+//        server.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        server.execute(); // run the server application
+//    }
 }
