@@ -27,6 +27,8 @@ public class TicTacToeServer extends JFrame {
     private Condition otherPlayerConnected; // to wait for the other player
     private Condition otherPlayerTurn; // to wait for the other player's turn
     private boolean gameOver = false;
+    private boolean winnerAnnounced = false;
+
 
     // set up tic-tac-toe server and GUI that displays messages
     public TicTacToeServer() {
@@ -136,7 +138,8 @@ public class TicTacToeServer extends JFrame {
         boolean winnerO = isWinner(MARKS[PLAYER_O]);
         boolean boardFull = isBoardFull();
 
-        if (winnerX || winnerO || boardFull) {
+        if ((winnerX || winnerO || boardFull) && !winnerAnnounced) {
+            winnerAnnounced = true;  // Set the flag to true
             gameOver = true;
             displayMessage("Game Over!\n");
             if (winnerX) {
@@ -150,6 +153,7 @@ public class TicTacToeServer extends JFrame {
 
         return gameOver;
     }
+
 
     // check if the board is full (a tie)
     private boolean isBoardFull() {
@@ -260,17 +264,20 @@ public class TicTacToeServer extends JFrame {
                 while (!isGameOver()) {
                     int location = 0; // initialize the move location
 
-                    if (input.hasNext())
+                    if (input.hasNext()) {
                         location = input.nextInt(); // get the move location
+                    }
 
                     // check for a valid move
-                    if (validateAndMove(location, playerNumber)) {
+                    if (!isGameOver() && validateAndMove(location, playerNumber)) {
                         displayMessage("\nlocation: " + location);
                         output.format("Valid move.\n"); // notify the client
                         output.flush(); // flush output
                     } else {
-                        output.format("Invalid move, try again\n");
-                        output.flush(); // flush output
+                        if (!isGameOver()) {
+                            output.format("Invalid move, try again\n");
+                            output.flush(); // flush output
+                        }
                     }
                 }
             } finally {

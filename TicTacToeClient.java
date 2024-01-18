@@ -1,20 +1,12 @@
 // Example : TicTacToeClient.java
 // Client that let a user play Tic-Tac-Toe with another across a network.
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.io.IOException;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import java.util.Formatter;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
@@ -36,6 +28,9 @@ public class TicTacToeClient extends JFrame implements Runnable {
     private final String X_MARK = "X"; // mark for first client
     private final String O_MARK = "O"; // mark for second client
 
+    private String finalPlayerName; // Declare finalPlayerName as a class variable
+
+
     // set up user-interface and board
     public TicTacToeClient(String host) {
         ticTacToeHost = host; // set name of server
@@ -47,6 +42,16 @@ public class TicTacToeClient extends JFrame implements Runnable {
         boardPanel.setLayout(new GridLayout(3, 3, 0,0 ));
 
         board = new Square[3][3]; // create board
+
+        // Prompt the user for their name using JOptionPane
+        String playerName = JOptionPane.showInputDialog("Enter your name:");
+        if (playerName == null || playerName.trim().isEmpty()) {
+            playerName = "Player"; // Default name if the user cancels or enters an empty string
+        }
+
+        finalPlayerName = playerName;
+
+        displayArea.append("Welcome, " + finalPlayerName + "!\n");
 
         // loop over the rows in the board
         for (int row =0 ; row < board.length; row++) {
@@ -66,8 +71,10 @@ public class TicTacToeClient extends JFrame implements Runnable {
         panel2.add(boardPanel, BorderLayout.CENTER); // add board panel
         add(panel2, BorderLayout.CENTER); // add container panel
 
-        setSize(300,225 ); // set size of window
+        setSize(400, 350); // set size of window
+        setLocationRelativeTo(null);// center the window on the screen
         setVisible(true); // show window
+
 
         startClient();
     } // end TicTacToeClient constructor
@@ -101,7 +108,7 @@ public class TicTacToeClient extends JFrame implements Runnable {
                 new Runnable() {
                     public void run() {
                         // display player's mark
-                        idField.setText("You are player \"" + myMark + "\"");
+                        idField.setText("You are player \"" + myMark + "\"" + " , username: " + finalPlayerName);
                     } // end method run
                 } // end anonymous inner class
         ); // end call to SwingUtilities.invokeLater
@@ -201,7 +208,7 @@ public class TicTacToeClient extends JFrame implements Runnable {
 
         // return preferred size of Square
         public Dimension getPreferredSize() {
-            return new Dimension(30,30 ); // return preferred size
+            return new Dimension(70,70 ); // return preferred size
         } // end method getPreferredSize
 
         // return minimum size of Square
@@ -224,8 +231,10 @@ public class TicTacToeClient extends JFrame implements Runnable {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            g.drawRect(0,0 ,29 ,29 ); // draw square
-            g.drawString(mark, 11,20 ); // draw mark
+            g.drawRect(0, 0, 67, 67); // draw larger square
+            g.setFont(new Font("Arial", Font.PLAIN, 40)); // set font size to 40
+            g.drawString(mark, 20, 50); // draw mark with updated font size
         } // end method paintComponent
+
     } // end inner-class Square
 } // end class TicTacToeClient
